@@ -320,7 +320,7 @@
 <body>
     <div class="container">
         <h1>Year In Review</h1>
-        <p class="subtitle">Squad Valorant 2025 Competitive Journey</p>
+        <p class="subtitle">Truck Chats Valorant 2025 Competitive Journey</p>
 
         <div id="content">
             <div class="loading">Loading match data...</div>
@@ -350,6 +350,10 @@
                         winRate: player.winRate,
                         topAgent: player.topAgent,
                         sortedMaps: player.sortedMaps,
+                        aces: player.aces,
+                        firstBloods: player.firstBloods,
+                        knifeKills: player.knifeKills,
+                        knifeDeaths: player.knifeDeaths,
                         bestMatch: player.bestMatch ? {
                             player: {
                                 stats: {
@@ -496,6 +500,24 @@
                                 <div class="stat-item">
                                     <div class="stat-value">${s.topAgent ? s.topAgent[0] : 'N/A'}</div>
                                     <div class="stat-label">Top Agent</div>
+                                </div>
+                            </div>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-value">${s.aces || 0}</div>
+                                    <div class="stat-label">Aces</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${s.firstBloods || 0}</div>
+                                    <div class="stat-label">First Bloods</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${s.knifeKills || 0}</div>
+                                    <div class="stat-label">Knife Kills</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${s.knifeDeaths || 0}</div>
+                                    <div class="stat-label">Knife Deaths</div>
                                 </div>
                             </div>
 

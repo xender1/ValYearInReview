@@ -37,8 +37,12 @@
         .subtitle {
             text-align: center;
             color: #888;
-            margin-bottom: 40px;
+            margin-bottom: 5px;
             font-size: 1.2rem;
+        }
+
+        .subtitle:last-of-type {
+            margin-bottom: 40px;
         }
 
         /* Squad Highlights Section */
@@ -49,7 +53,7 @@
         .squad-section h2 {
             text-align: center;
             font-size: 1.8rem;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             color: #ff758c;
         }
 
@@ -96,7 +100,7 @@
         .players-section h2 {
             text-align: center;
             font-size: 1.8rem;
-            margin-bottom: 25px;
+            margin-bottom: 5px;
             color: #ff758c;
         }
 
@@ -320,13 +324,14 @@
 <body>
     <div class="container">
         <h1>Year In Review</h1>
-        <p class="subtitle">Truck Chats Valorant 2025* Competitive Journey</p>
-        <p class="subtitle">(Accurate data from Oct 18th onward)</p>
+        <p class="subtitle">Truck Chat Valorant 2025* Competitive Journey</p>
+        <p class="subtitle">(Accurate data from ~Oct 18th onward)</p>
+        
 
         <div id="content">
             <div class="loading">Loading match data...</div>
         </div>
-    </div>
+    </div>z
 
     <script>
         async function loadAllData() {
@@ -414,6 +419,7 @@
             let content = `
                 <div class="squad-section">
                     <h2>Squad Stats</h2>
+                    <p class="subtitle">Squad Data Only - 5 Stacks</p>
                     <div class="highlights">
                         <div class="highlight-card">
                             <div class="highlight-value">${allPlayerData.length}</div>
@@ -444,6 +450,7 @@
 
                 <div class="players-section">
                     <h2>Individual Stats</h2>
+                    <p class="subtitle">Squad Data Only - 5 Stacks</p>
                     <div class="players-grid" id="players-grid">
             `;
 

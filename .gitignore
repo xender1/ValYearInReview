@@ -1,0 +1,9 @@
+# Large match data files (run generate_stats.py to create stats.json)
+*_matches.json
+
+# Debug output
+stats_pretty.json
+
+# Python
+__pycache__/
+*.pyc

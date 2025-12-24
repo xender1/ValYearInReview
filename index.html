@@ -282,6 +282,11 @@
             font-size: 0.7rem;
         }
 
+        .stack-names {
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
         .maps-section {
             margin-top: 20px;
         }
@@ -360,6 +365,7 @@
                         firstBloods: player.firstBloods,
                         knifeKills: player.knifeKills,
                         knifeDeaths: player.knifeDeaths,
+                        mostPlayedStack: player.mostPlayedStack,
                         bestMatch: player.bestMatch ? {
                             player: {
                                 stats: {
@@ -528,6 +534,13 @@
                                     <div class="stat-label">Knife Deaths</div>
                                 </div>
                             </div>
+
+                            ${s.mostPlayedStack ? `
+                            <div class="best-match">
+                                <h4>Most Played Stack</h4>
+                                <div class="stack-names">${s.mostPlayedStack.join(', ')}</div>
+                            </div>
+                            ` : ''}
 
                             ${s.bestMatch ? `
                             <div class="best-match">

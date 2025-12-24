@@ -4,6 +4,10 @@
 # Debug output
 stats_pretty.json
 
+# Python scripts (local only)
+python/generate_stats.py
+python/main.py
+
 # Python
 __pycache__/
 *.pyc

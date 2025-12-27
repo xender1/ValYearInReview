@@ -336,14 +336,17 @@
         <div id="content">
             <div class="loading">Loading match data...</div>
         </div>
-    </div>z
+    </div>
 
     <script>
         async function loadAllData() {
             try {
                 const response = await fetch('stats.json');
                 if (!response.ok) throw new Error('Failed to load stats.json');
-                const allPlayerData = await response.json();
+                const data = await response.json();
+
+                const uniqueMatches = data.uniqueMatches;
+                const allPlayerData = data.playerStats;
 
                 // Transform data to match expected format
                 const formattedData = allPlayerData.map(player => ({
@@ -383,7 +386,7 @@
                     }
                 }));
 
-                renderPage(formattedData);
+                renderPage(formattedData, uniqueMatches);
             } catch (error) {
                 console.error('Error loading stats:', error);
                 document.getElementById('content').innerHTML =
@@ -391,10 +394,10 @@
             }
         }
 
-        function renderPage(allPlayerData) {
+        function renderPage(allPlayerData, uniqueMatches) {
             // Calculate squad totals
             const squadStats = {
-                totalMatches: 0,
+                totalMatches: uniqueMatches,
                 totalKills: 0,
                 totalDeaths: 0,
                 totalAssists: 0,
@@ -403,7 +406,6 @@
             };
 
             allPlayerData.forEach(p => {
-                squadStats.totalMatches += p.stats.matchCount;
                 squadStats.totalKills += p.stats.totalKills;
                 squadStats.totalDeaths += p.stats.totalDeaths;
                 squadStats.totalAssists += p.stats.totalAssists;

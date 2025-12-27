@@ -1,12 +1,16 @@
 # Large match data files (run generate_stats.py to create stats.json)
-*_matches.json
+python/json_full/
 
 # Debug output
-stats_pretty.json
+python/stats_pretty.json
 
 # Python scripts (local only)
 python/generate_stats.py
 python/main.py
+
+# Environment variables
+python/.env
+.env
 
 # Python
 __pycache__/

@@ -568,9 +568,9 @@
 
                             <div class="maps-section">
                                 <h4>Kills by Map</h4>
-                                ${s.sortedMaps.slice(0, 5).map(([map, kills]) => `
+                                ${s.sortedMaps.slice(0, 5).map(([map, kills, games]) => `
                                     <div class="map-bar">
-                                        <span class="map-name">${map}</span>
+                                        <span class="map-name">${map} (${games})</span>
                                         <div class="map-bar-fill" style="width: ${(kills / maxMapKills) * 50}%">${kills}</div>
                                     </div>
                                 `).join('')}

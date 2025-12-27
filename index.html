@@ -346,6 +346,9 @@
                 const data = await response.json();
 
                 const uniqueMatches = data.uniqueMatches;
+                const squadWins = data.squadWins;
+                const bestStack = data.bestStack;
+                const allStacks = data.allStacks || [];
                 const allPlayerData = data.playerStats;
 
                 // Transform data to match expected format
@@ -386,7 +389,7 @@
                     }
                 }));
 
-                renderPage(formattedData, uniqueMatches);
+                renderPage(formattedData, uniqueMatches, squadWins, bestStack, allStacks);
             } catch (error) {
                 console.error('Error loading stats:', error);
                 document.getElementById('content').innerHTML =
@@ -394,14 +397,13 @@
             }
         }
 
-        function renderPage(allPlayerData, uniqueMatches) {
+        function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStacks) {
             // Calculate squad totals
             const squadStats = {
                 totalMatches: uniqueMatches,
                 totalKills: 0,
                 totalDeaths: 0,
                 totalAssists: 0,
-                totalWins: 0,
                 totalHeadshots: 0
             };
 
@@ -409,7 +411,6 @@
                 squadStats.totalKills += p.stats.totalKills;
                 squadStats.totalDeaths += p.stats.totalDeaths;
                 squadStats.totalAssists += p.stats.totalAssists;
-                squadStats.totalWins += p.stats.wins;
                 squadStats.totalHeadshots += p.stats.totalHeadshots;
             });
 
@@ -417,7 +418,7 @@
                 ? (squadStats.totalKills / squadStats.totalDeaths).toFixed(2)
                 : squadStats.totalKills;
             const squadWinRate = squadStats.totalMatches > 0
-                ? ((squadStats.totalWins / squadStats.totalMatches) * 100).toFixed(0)
+                ? ((squadWins / squadStats.totalMatches) * 100).toFixed(0)
                 : 0;
 
             // Find Best K/D
@@ -454,6 +455,49 @@
                             <div class="highlight-label">Best K/D (${bestKD ? bestKD.stats.kd : '0'})</div>
                         </div>
                     </div>
+                    ${bestStack ? `
+                        <div style="margin-top: 30px; text-align: center;">
+                            <h3 style="color: #ff758c; margin-bottom: 15px;">Best 5-Stack (min. 3 games)</h3>
+                            <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; max-width: 600px; margin: 0 auto;">
+                                <div style="font-size: 1.1rem; margin-bottom: 10px; color: #fff;">
+                                    ${bestStack.players.join(', ')}
+                                </div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #ff4655; margin-bottom: 5px;">
+                                    ${bestStack.winRate}% Win Rate
+                                </div>
+                                <div style="color: #aaa; font-size: 0.9rem;">
+                                    ${bestStack.wins}-${bestStack.total - bestStack.wins} (${bestStack.total} games)
+                                </div>
+                            </div>
+                            ${allStacks.length > 1 ? `
+                                <button onclick="toggleAllStacks()" style="margin-top: 20px; background: rgba(255, 70, 85, 0.2); border: 1px solid #ff4655; color: #ff4655; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: bold; transition: all 0.3s;" onmouseover="this.style.background='rgba(255, 70, 85, 0.3)'" onmouseout="this.style.background='rgba(255, 70, 85, 0.2)'">
+                                    View All ${allStacks.length} Squad Compositions
+                                </button>
+                                <div id="all-stacks-container" style="display: none; margin-top: 20px;">
+                                    <div style="max-width: 800px; margin: 0 auto;">
+                                        ${allStacks.map((stack, index) => `
+                                            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; text-align: left;">
+                                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                    <div style="flex: 1;">
+                                                        <div style="color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">#${index + 1}</div>
+                                                        <div style="font-size: 0.95rem; color: #fff; margin-bottom: 5px;">
+                                                            ${stack.players.join(', ')}
+                                                        </div>
+                                                        <div style="color: #aaa; font-size: 0.85rem;">
+                                                            ${stack.wins}-${stack.total - stack.wins} (${stack.total} games)
+                                                        </div>
+                                                    </div>
+                                                    <div style="font-size: 1.3rem; font-weight: bold; color: ${index === 0 ? '#ff4655' : '#ff758c'}; margin-left: 20px;">
+                                                        ${stack.winRate}%
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
                 </div>
 
                 <div class="players-section">
@@ -607,6 +651,20 @@
             card.classList.toggle('expanded');
             details.classList.toggle('expanded');
             hint.textContent = details.classList.contains('expanded') ? 'Click to collapse' : 'Click for details';
+        }
+
+        function toggleAllStacks() {
+            const container = document.getElementById('all-stacks-container');
+            const button = event.target;
+
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                button.textContent = 'Hide Squad Compositions';
+            } else {
+                container.style.display = 'none';
+                const allStacksCount = container.querySelectorAll('div[style*="background: rgba(255, 255, 255, 0.03)"]').length;
+                button.textContent = `View All ${allStacksCount} Squad Compositions`;
+            }
         }
 
         loadAllData();

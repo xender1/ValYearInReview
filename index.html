@@ -152,6 +152,8 @@
             width: 50px;
             height: 50px;
             background: linear-gradient(135deg, #ff4655, #ff758c);
+            background-size: cover;
+            background-position: center;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -159,6 +161,7 @@
             font-size: 1.4rem;
             font-weight: bold;
             flex-shrink: 0;
+            color: transparent;
         }
 
         .player-info h3 {
@@ -355,6 +358,9 @@
                 const formattedData = allPlayerData.map(player => ({
                     name: player.name,
                     tag: player.tag,
+                    cardId: player.cardId,
+                    rank: player.rank,
+                    rankTier: player.rankTier,
                     stats: {
                         matchCount: player.matchCount,
                         totalKills: player.totalKills,
@@ -509,14 +515,23 @@
             allPlayerData.forEach((player, index) => {
                 const s = player.stats;
                 const maxMapKills = s.sortedMaps[0] ? s.sortedMaps[0][1] : 1;
+                const cardUrl = player.cardId
+                    ? `https://media.valorant-api.com/playercards/${player.cardId}/smallart.png`
+                    : '';
+                const rankIconUrl = player.rankTier
+                    ? `https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/${player.rankTier}/smallicon.png`
+                    : '';
 
                 content += `
                     <div class="player-card" id="player-${index}" onclick="togglePlayer(${index})">
                         <div class="player-header">
-                            <div class="player-avatar">${player.name[0].toUpperCase()}</div>
+                            <div class="player-avatar" style="${cardUrl ? `background-image: url('${cardUrl}');` : ''}">${player.name[0].toUpperCase()}</div>
                             <div class="player-info">
                                 <h3>${player.name}</h3>
-                                <span class="tag">#${player.tag || '???'}</span>
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <span class="tag">#${player.tag || '???'}</span>
+                                    ${rankIconUrl ? `<img src="${rankIconUrl}" alt="${player.rank || 'Rank'}" style="width: 20px; height: 20px;" title="${player.rank || 'Rank'}">` : ''}
+                                </div>
                             </div>
                         </div>
                         <div class="player-summary">

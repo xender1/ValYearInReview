@@ -32,6 +32,7 @@ async function loadAllData() {
                 sortedMaps: player.sortedMaps,
                 aces: player.aces,
                 firstBloods: player.firstBloods,
+                firstDeaths: player.firstDeaths,
                 knifeKills: player.knifeKills,
                 knifeDeaths: player.knifeDeaths,
                 mostPlayedStack: player.mostPlayedStack,
@@ -242,6 +243,10 @@ function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStack
                         <div class="stat-item">
                             <div class="stat-value">${s.firstBloods || 0}</div>
                             <div class="stat-label">First Bloods</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${s.firstDeaths || 0}</div>
+                            <div class="stat-label">First Deaths</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-value">${s.knifeKills || 0}</div>

@@ -33,6 +33,8 @@ async function loadAllData() {
                 aces: player.aces,
                 firstBloods: player.firstBloods,
                 firstDeaths: player.firstDeaths,
+                clutches: player.clutches,
+                clutchBreakdown: player.clutchBreakdown,
                 knifeKills: player.knifeKills,
                 knifeDeaths: player.knifeDeaths,
                 mostPlayedStack: player.mostPlayedStack,
@@ -89,6 +91,10 @@ function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStack
     const bestKD = allPlayerData.reduce((best, p) =>
         parseFloat(p.stats.kd) > parseFloat(best?.stats.kd || 0) ? p : best, null);
 
+    // Find Most Clutches
+    const mostClutches = allPlayerData.reduce((best, p) =>
+        (p.stats.clutches || 0) > (best?.stats.clutches || 0) ? p : best, null);
+
     let content = `
         <div class="squad-section">
             <h2>Squad Stats</h2>
@@ -114,9 +120,23 @@ function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStack
                     <div class="highlight-value">${squadWinRate}%</div>
                     <div class="highlight-label">Win Rate</div>
                 </div>
-                <div class="highlight-card">
+            </div>
+            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
+                <div class="highlight-card" style="min-width: 200px;">
                     <div class="highlight-value name">${bestKD ? bestKD.name : 'N/A'}</div>
                     <div class="highlight-label">Best K/D (${bestKD ? bestKD.stats.kd : '0'})</div>
+                </div>
+                <div class="highlight-card" style="min-width: 200px;">
+                    <div class="highlight-value name">${mostClutches ? mostClutches.name : 'N/A'}</div>
+                    <div class="highlight-label">Most Clutches (${mostClutches ? mostClutches.stats.clutches : '0'})</div>
+                    ${mostClutches && mostClutches.stats.clutchBreakdown ? `
+                        <div style="font-size: 0.7rem; color: #aaa; margin-top: 8px;">
+                            ${Object.entries(mostClutches.stats.clutchBreakdown)
+                                .filter(([_, count]) => count > 0)
+                                .map(([type, count]) => `${type}: ${count}`)
+                                .join(' | ')}
+                        </div>
+                    ` : ''}
                 </div>
             </div>
             ${bestStack ? `
@@ -239,6 +259,18 @@ function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStack
                         <div class="stat-item">
                             <div class="stat-value">${s.aces || 0}</div>
                             <div class="stat-label">Aces</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${s.clutches || 0}</div>
+                            <div class="stat-label">Clutches</div>
+                            ${s.clutchBreakdown && s.clutches > 0 ? `
+                                <div style="font-size: 0.75rem; color: #ff758c; margin-top: 6px; line-height: 1.4;">
+                                    ${Object.entries(s.clutchBreakdown)
+                                        .filter(([_, count]) => count > 0)
+                                        .map(([type, count]) => `<span style="background: rgba(255, 70, 85, 0.15); padding: 2px 6px; border-radius: 4px; margin: 2px; display: inline-block;">${type}: ${count}</span>`)
+                                        .join(' ')}
+                                </div>
+                            ` : ''}
                         </div>
                         <div class="stat-item">
                             <div class="stat-value">${s.firstBloods || 0}</div>

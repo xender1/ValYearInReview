@@ -30,6 +30,8 @@ async function loadAllData() {
                 winRate: player.winRate,
                 topAgent: player.topAgent,
                 sortedMaps: player.sortedMaps,
+                bestWin: player.bestWin,
+                worstLoss: player.worstLoss,
                 aces: player.aces,
                 firstBloods: player.firstBloods,
                 firstDeaths: player.firstDeaths,
@@ -161,7 +163,7 @@ function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStack
                             <div style="max-width: 800px; margin: 0 auto;">
                                 ${allStacks.map((stack, index) => `
                                     <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; text-align: left;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                             <div style="flex: 1;">
                                                 <div style="color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">#${index + 1}</div>
                                                 <div style="font-size: 0.95rem; color: #fff; margin-bottom: 5px;">
@@ -175,6 +177,24 @@ function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStack
                                                 ${stack.winRate}%
                                             </div>
                                         </div>
+                                        ${stack.bestGame || stack.worstGame ? `
+                                            <div style="display: flex; gap: 10px; margin-top: 10px; font-size: 0.8rem;">
+                                                ${stack.bestGame ? `
+                                                    <div style="flex: 1; background: rgba(46, 213, 115, 0.1); border: 1px solid rgba(46, 213, 115, 0.3); border-radius: 6px; padding: 8px;">
+                                                        <div style="color: #2ed573; font-weight: bold; margin-bottom: 4px;">Best Win</div>
+                                                        <div style="color: #fff;">${stack.bestGame.teamRounds}-${stack.bestGame.enemyRounds}</div>
+                                                        <div style="color: #aaa; font-size: 0.75rem;">${stack.bestGame.map}</div>
+                                                    </div>
+                                                ` : ''}
+                                                ${stack.worstGame ? `
+                                                    <div style="flex: 1; background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); border-radius: 6px; padding: 8px;">
+                                                        <div style="color: #ff4757; font-weight: bold; margin-bottom: 4px;">Worst Loss</div>
+                                                        <div style="color: #fff;">${stack.worstGame.teamRounds}-${stack.worstGame.enemyRounds}</div>
+                                                        <div style="color: #aaa; font-size: 0.75rem;">${stack.worstGame.map}</div>
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        ` : ''}
                                     </div>
                                 `).join('')}
                             </div>
@@ -319,6 +339,25 @@ function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStack
                             </div>
                         </div>
                     </div>
+                    ` : ''}
+
+                    ${s.bestWin || s.worstLoss ? `
+                        <div style="display: flex; gap: 10px; margin-top: 15px; font-size: 0.85rem;">
+                            ${s.bestWin ? `
+                                <div style="flex: 1; background: rgba(46, 213, 115, 0.1); border: 1px solid rgba(46, 213, 115, 0.3); border-radius: 6px; padding: 10px;">
+                                    <div style="color: #2ed573; font-weight: bold; margin-bottom: 6px;">Best Win</div>
+                                    <div style="color: #fff; font-size: 1.1rem; margin-bottom: 4px;">${s.bestWin.teamRounds}-${s.bestWin.enemyRounds}</div>
+                                    <div style="color: #aaa; font-size: 0.8rem;">${s.bestWin.map}</div>
+                                </div>
+                            ` : ''}
+                            ${s.worstLoss ? `
+                                <div style="flex: 1; background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); border-radius: 6px; padding: 10px;">
+                                    <div style="color: #ff4757; font-weight: bold; margin-bottom: 6px;">Worst Loss</div>
+                                    <div style="color: #fff; font-size: 1.1rem; margin-bottom: 4px;">${s.worstLoss.teamRounds}-${s.worstLoss.enemyRounds}</div>
+                                    <div style="color: #aaa; font-size: 0.8rem;">${s.worstLoss.map}</div>
+                                </div>
+                            ` : ''}
+                        </div>
                     ` : ''}
 
                     <div class="maps-section">

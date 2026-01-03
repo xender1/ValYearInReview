@@ -1,7 +1,27 @@
+// Determine which year to load based on the page title or a data attribute
+function getYear() {
+    const title = document.title;
+    if (title.includes('2025')) return 2025;
+    if (title.includes('2026')) return 2026;
+    return 2026; // Default to 2026
+}
+
+// Get the correct Gist URL based on year
+function getGistUrl(year) {
+    const gistUrls = {
+        2025: 'https://gist.githubusercontent.com/xender1/39473d84ba1e6982726a72bd5d90fe9e/raw/gistfile1.txt',
+        2026: 'https://gist.githubusercontent.com/xender1/1d539248bcd3f7b83a2773022c936a87/raw/gistfile1.txt'
+    };
+    return gistUrls[year] || gistUrls[2026];
+}
+
 async function loadAllData() {
     try {
+        const year = getYear();
+        const gistUrl = getGistUrl(year);
+
         // Fetch from GitHub Gist (use raw URL without revision hash to always get latest)
-        const response = await fetch('https://gist.githubusercontent.com/xender1/39473d84ba1e6982726a72bd5d90fe9e/raw/gistfile1.txt');
+        const response = await fetch(gistUrl);
         if (!response.ok) throw new Error('Failed to load stats.json');
         const data = await response.json();
 
@@ -10,6 +30,7 @@ async function loadAllData() {
         const bestStack = data.bestStack;
         const allStacks = data.allStacks || [];
         const allPlayerData = data.playerStats;
+        const hourlyStats = data.hourlyStats || [];
 
         // Transform data to match expected format
         const formattedData = allPlayerData.map(player => ({
@@ -57,7 +78,7 @@ async function loadAllData() {
             }
         }));
 
-        renderPage(formattedData, uniqueMatches, squadWins, bestStack, allStacks);
+        renderPage(formattedData, uniqueMatches, squadWins, bestStack, allStacks, hourlyStats);
     } catch (error) {
         console.error('Error loading stats:', error);
         document.getElementById('content').innerHTML =
@@ -65,7 +86,7 @@ async function loadAllData() {
     }
 }
 
-function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStacks) {
+function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStacks, hourlyStats) {
     // Calculate squad totals
     const squadStats = {
         totalMatches: uniqueMatches,
@@ -203,6 +224,16 @@ function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStack
                 </div>
             ` : ''}
         </div>
+
+        ${hourlyStats && hourlyStats.length > 0 ? `
+        <div class="squad-section" style="margin-top: 30px;">
+            <h2>Performance by Hour</h2>
+            <p class="subtitle">Wins and Losses by Time of Day</p>
+            <div style="margin-top: 20px;">
+                ${renderHourlyChart(hourlyStats)}
+            </div>
+        </div>
+        ` : ''}
 
         <div class="players-section">
             <h2>Individual Stats</h2>
@@ -380,6 +411,95 @@ function renderPage(allPlayerData, uniqueMatches, squadWins, bestStack, allStack
     `;
 
     document.getElementById('content').innerHTML = content;
+}
+
+function renderHourlyChart(matchResults) {
+    if (!matchResults || matchResults.length === 0) {
+        return '<p style="text-align: center; color: #aaa;">No data available</p>';
+    }
+
+    // Group matches by local hour
+    const hourlyData = {};
+    for (let hour = 0; hour < 24; hour++) {
+        hourlyData[hour] = { wins: 0, losses: 0, total: 0 };
+    }
+
+    // Convert timestamps to user's local timezone and group by hour
+    matchResults.forEach(match => {
+        const date = new Date(match.timestamp);
+        const localHour = date.getHours(); // Automatically uses user's local timezone
+
+        if (match.won) {
+            hourlyData[localHour].wins++;
+        } else {
+            hourlyData[localHour].losses++;
+        }
+        hourlyData[localHour].total++;
+    });
+
+    // Convert to array and filter hours with games
+    // Sort from 12 PM (noon) to 11 AM (morning) - PM hours first, then AM hours
+    const hourlyStats = Object.entries(hourlyData)
+        .map(([hour, data]) => ({ hour: parseInt(hour), ...data }))
+        .filter(h => h.total > 0)
+        .sort((a, b) => {
+            // Convert to PM-first order: 12, 13, 14, ..., 23, 0, 1, 2, ..., 11
+            const orderA = a.hour >= 12 ? a.hour - 12 : a.hour + 12;
+            const orderB = b.hour >= 12 ? b.hour - 12 : b.hour + 12;
+            return orderA - orderB;
+        });
+
+    if (hourlyStats.length === 0) {
+        return '<p style="text-align: center; color: #aaa;">No data available</p>';
+    }
+
+    // Find max total games for scaling
+    const maxGames = Math.max(...hourlyStats.map(h => h.total));
+
+    return `
+        <div style="max-width: 750px; margin: 0 auto;">
+            <div style="display: flex; align-items: flex-end; gap: 8px; padding: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; min-height: 250px; justify-content: center;">
+                ${hourlyStats.map(h => {
+                const winHeight = maxGames > 0 ? (h.wins / maxGames) * 200 : 0;
+                const lossHeight = maxGames > 0 ? (h.losses / maxGames) * 200 : 0;
+                const winRate = h.total > 0 ? Math.round((h.wins / h.total) * 100) : 0;
+
+                // Format hour (12-hour format)
+                const hour12 = h.hour === 0 ? 12 : h.hour > 12 ? h.hour - 12 : h.hour;
+                const ampm = h.hour < 12 ? 'AM' : 'PM';
+
+                return `
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                            ${h.wins > 0 ? `
+                                <div style="width: 32px; height: ${winHeight}px; background: linear-gradient(180deg, #2ed573 0%, #1e8449 100%); border-radius: 4px 4px 0 0; position: relative;" title="${h.wins} wins">
+                                    <span style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; color: #2ed573; font-weight: bold;">${h.wins}</span>
+                                </div>
+                            ` : ''}
+                            ${h.losses > 0 ? `
+                                <div style="width: 32px; height: ${lossHeight}px; background: linear-gradient(180deg, #ff4757 0%, #c0392b 100%); border-radius: ${h.wins > 0 ? '0 0 4px 4px' : '4px'}; position: relative;" title="${h.losses} losses">
+                                    <span style="position: absolute; ${h.wins > 0 ? 'bottom' : 'top'}: -20px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; color: #ff4757; font-weight: bold;">${h.losses}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div style="font-size: 0.7rem; color: #aaa; margin-top: 10px;">${winRate}%</div>
+                        <div style="font-size: 0.8rem; color: #fff; font-weight: bold;">${hour12}${ampm}</div>
+                    </div>
+                `;
+            }).join('')}
+            </div>
+            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 15px; font-size: 0.85rem;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 12px; height: 12px; background: #2ed573; border-radius: 2px;"></div>
+                    <span style="color: #aaa;">Wins</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 12px; height: 12px; background: #ff4757; border-radius: 2px;"></div>
+                    <span style="color: #aaa;">Losses</span>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function togglePlayer(index) {
